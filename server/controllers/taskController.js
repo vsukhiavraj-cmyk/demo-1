@@ -1,8 +1,8 @@
 import Task from "../models/Task.js";
 import Goal from "../models/Goal.js";
 import WeeklyActivity from "../models/WeeklyActivity.js";
-// AWS S3 dependencies removed - files are now stored locally in browser localStorage
 
+// (The rest of the functions like getPast7DaysData, calculateStreak, etc. remain the same)
 function getLast7Days() {
   const days = [];
   const now = new Date();
@@ -114,9 +114,6 @@ async function calculateAndStoreWeeklyActivity(userId) {
     { upsert: true }
   );
 }
-
-
-
 // SEQUENTIAL TASK SYSTEM - Get all tasks assigned for today
 export const getDailyTask = async (userId, goalId) => {
   try {
@@ -132,8 +129,20 @@ export const getDailyTask = async (userId, goalId) => {
 
     // Get today's date range
     const today = new Date();
-    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+    const startOfDay = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+    const endOfDay = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+      23,
+      59,
+      59,
+      999
+    );
 
     // Get ALL tasks assigned for today (pending, in_progress, completed)
     // Sort by sequenceOrder descending to show newest tasks first (stack behavior)
@@ -141,7 +150,7 @@ export const getDailyTask = async (userId, goalId) => {
       user: userId,
       goal: goalId,
       assignedDate: { $gte: startOfDay, $lte: endOfDay },
-      status: { $in: ['pending', 'in_progress', 'completed'] }
+      status: { $in: ["pending", "in_progress", "completed"] },
     }).sort({ sequenceOrder: -1 });
 
     return todaysTasks;
@@ -164,7 +173,7 @@ export const getAssignedTasksOnly = async (userId, goalId) => {
     const assignedTasks = await Task.find({
       user: userId,
       goal: goalId,
-      status: { $in: ['pending', 'in_progress', 'completed'] }
+      status: { $in: ["pending", "in_progress", "completed"] },
     }).sort({ assignedDate: -1, sequenceOrder: -1 });
     return assignedTasks;
   } catch (error) {
@@ -184,11 +193,13 @@ export const requestNextTask = async (userId, goalId) => {
     const pendingTasks = await Task.find({
       user: userId,
       goal: goalId,
-      status: 'pending'
+      status: "pending",
     });
 
     if (pendingTasks.length > 0) {
-      throw new Error("You must complete your current pending tasks before requesting new ones");
+      throw new Error(
+        "You must complete your current pending tasks before requesting new ones"
+      );
     }
 
     // Get the next task using getDailyTask logic
@@ -206,7 +217,7 @@ export const getTasks = async (req, res) => {
     const { goalId } = req.query;
 
     let query = { user: req.user._id };
-    
+
     // Filter by goalId if provided - STRICT FILTERING
     if (goalId) {
       // Validate goalId format
@@ -287,7 +298,7 @@ export const updateTask = async (req, res) => {
     });
 
     // SEQUENTIAL LOGIC: Task completion (no auto-assignment)
-    if (oldStatus !== 'completed' && task.status === 'completed' && task.goal) {
+    if (oldStatus !== "completed" && task.status === "completed" && task.goal) {
       // No auto-assignment here - tasks are only assigned:
       // 1. At midnight (if no pending tasks)
       // 2. When user clicks "Generate New Task"
@@ -328,7 +339,8 @@ export const updateTask = async (req, res) => {
     res.json({
       success: true,
       data: task.formattedData,
-      nextTaskAssigned: oldStatus !== 'completed' && task.status === 'completed',
+      nextTaskAssigned:
+        oldStatus !== "completed" && task.status === "completed",
     });
   } catch (error) {
     console.error("Failed to update task:", error);
@@ -339,7 +351,6 @@ export const updateTask = async (req, res) => {
     });
   }
 };
-
 // Delete a task
 export const deleteTask = async (req, res) => {
   try {
@@ -413,15 +424,17 @@ export const getTasksByDate = async (req, res) => {
         user: req.user._id,
         goal: goalId,
         assignedDate: { $gte: queryDate, $lt: nextDate },
-        status: { $in: ['pending', 'in_progress', 'completed'] }
+        status: { $in: ["pending", "in_progress", "completed"] },
       };
 
-      const tasks = await Task.find(query).populate("goal", "field description timeline").sort({ sequenceOrder: -1 });
+      const tasks = await Task.find(query)
+        .populate("goal", "field description timeline")
+        .sort({ sequenceOrder: -1 });
 
       const formattedTasks = tasks.map((task) => task.formattedData);
 
-      return res.json({ 
-        success: true, 
+      return res.json({
+        success: true,
         data: formattedTasks,
         filteredByGoal: true,
         goalId: goalId,
@@ -437,11 +450,14 @@ export const getTasksByDate = async (req, res) => {
         scheduledDate: { $gte: queryDate, $lt: nextDate },
       };
 
-      const tasks = await Task.find(query).populate("goal", "field description timeline");
+      const tasks = await Task.find(query).populate(
+        "goal",
+        "field description timeline"
+      );
       const formattedTasks = tasks.map((task) => task.formattedData);
 
-      return res.json({ 
-        success: true, 
+      return res.json({
+        success: true,
         data: formattedTasks,
         filteredByGoal: false,
         goalId: null,
@@ -454,22 +470,4 @@ export const getTasksByDate = async (req, res) => {
     console.error("[getTasksByDate] Error:", err);
     res.status(500).json({ message: "Server error", error: err.message });
   }
-};
-
-// File upload functionality moved to client-side LocalFileManager
-// This endpoint is no longer needed as files are stored locally in browser localStorage
-export const uploadTaskSubmission = async (req, res) => {
-  res.status(410).json({
-    success: false,
-    message: "File upload functionality has been moved to client-side local storage. Files are now stored directly in the browser.",
-  });
-};
-
-// File viewing functionality moved to client-side LocalFileManager
-// This endpoint is no longer needed as files are stored and viewed locally in browser localStorage
-export const viewTaskSubmission = async (req, res) => {
-  res.status(410).json({
-    success: false,
-    message: "File viewing functionality has been moved to client-side local storage. Files are now accessed directly in the browser.",
-  });
 };

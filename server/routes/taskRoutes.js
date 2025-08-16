@@ -4,21 +4,17 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import { protect } from "../middleware/auth.js";
-import upload from "../middleware/upload.js";
 import {
   getTasks,
   getTaskById,
   updateTask,
   deleteTask,
   getTasksByDate,
-  uploadTaskSubmission,
-  viewTaskSubmission,
 } from "../controllers/taskController.js";
 import Task from "../models/Task.js";
-// AWS S3 dependencies removed - files are now stored locally in browser localStorage
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = dirname(__filename); // Corrected this line
 
 const router = express.Router();
 
@@ -26,18 +22,22 @@ const router = express.Router();
 router.use(protect);
 
 // Import the new gated sequential functions
-import { getDailyTask, requestNextTask, getAssignedTasksOnly } from "../controllers/taskController.js";
+import {
+  getDailyTask,
+  requestNextTask,
+  getAssignedTasksOnly,
+} from "../controllers/taskController.js";
 import { assignNextTaskManually } from "../services/taskScheduler.js";
 
 // GET /api/tasks/daily - Get daily task using gated sequential logic
 router.get("/daily", async (req, res) => {
   try {
     const { goalId } = req.query;
-    
+
     if (!goalId) {
       return res.status(400).json({
         success: false,
-        message: "Goal ID is required for daily tasks"
+        message: "Goal ID is required for daily tasks",
       });
     }
 
@@ -65,11 +65,11 @@ router.get("/daily", async (req, res) => {
 router.get("/assigned", async (req, res) => {
   try {
     const { goalId } = req.query;
-    
+
     if (!goalId) {
       return res.status(400).json({
         success: false,
-        message: "Goal ID is required for assigned tasks"
+        message: "Goal ID is required for assigned tasks",
       });
     }
 
@@ -82,7 +82,7 @@ router.get("/assigned", async (req, res) => {
       totalTasks: formattedTasks.length,
       goalId: goalId,
       onlyAssignedTasks: true,
-      message: "Only showing assigned tasks (hiding queued tasks)"
+      message: "Only showing assigned tasks (hiding queued tasks)",
     });
   } catch (error) {
     console.error("[GET /api/tasks/assigned] Error:", error);
@@ -98,18 +98,18 @@ router.get("/assigned", async (req, res) => {
 router.post("/request-next", async (req, res) => {
   try {
     const { goalId } = req.body;
-    
+
     if (!goalId) {
       return res.status(400).json({
         success: false,
-        message: "Goal ID is required to request next task"
+        message: "Goal ID is required to request next task",
       });
     }
 
     if (!req.user || !req.user._id) {
       return res.status(401).json({
         success: false,
-        message: "User not authenticated"
+        message: "User not authenticated",
       });
     }
 
@@ -122,7 +122,10 @@ router.post("/request-next", async (req, res) => {
       data: formattedTasks,
       totalTasks: formattedTasks.length,
       goalId: goalId,
-      message: formattedTasks.length > 0 ? "Next task assigned successfully" : "No more tasks available",
+      message:
+        formattedTasks.length > 0
+          ? "Next task assigned successfully"
+          : "No more tasks available",
     });
   } catch (error) {
     console.error("[POST /api/tasks/request-next] Error:", error);
@@ -152,37 +155,6 @@ router.post("/:id/submit", updateTask);
 
 // DELETE /api/tasks/:id - Delete a task
 router.delete("/:id", deleteTask);
-
-// POST /api/tasks/upload-submission - Upload task submission file
-router.post(
-  "/upload-submission",
-  upload.single("file"),
-  (req, res, next) => {
-    // Handle multer errors
-    if (req.fileValidationError) {
-      return res.status(400).json({
-        success: false,
-        message: req.fileValidationError,
-      });
-    }
-
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: "No file uploaded. Please select a file to upload.",
-      });
-    }
-
-    // File uploaded successfully
-    // Note: File upload functionality moved to client-side LocalFileManager
-
-    next();
-  },
-  uploadTaskSubmission
-);
-
-// GET /api/tasks/:id/submission - View task submission file
-router.get("/:id/submission", viewTaskSubmission);
 
 // GET /api/tasks/test-file-access - Test file access functionality (development only)
 if (process.env.NODE_ENV !== "production") {
@@ -233,15 +205,6 @@ if (process.env.NODE_ENV !== "production") {
   });
 }
 
-// File download functionality removed - files are now stored locally in browser localStorage
-// This endpoint is no longer needed as files are accessed directly through LocalFileManager
-router.get("/:id/submission/download", async (req, res) => {
-  res.status(410).json({
-    success: false,
-    message: "File download functionality has been moved to client-side local storage. Files are now accessed directly in the browser.",
-  });
-});
-
 // Helper function to get MIME type based on file extension
 function getMimeType(filename) {
   const ext = filename.split(".").pop().toLowerCase();
@@ -260,25 +223,25 @@ function getMimeType(filename) {
 router.get("/debug-sequential-system", protect, async (req, res) => {
   try {
     const { goalId } = req.query;
-    
+
     if (!goalId) {
       return res.status(400).json({
         success: false,
-        message: "Goal ID is required"
+        message: "Goal ID is required",
       });
     }
 
     // Get all tasks for this goal
-    const allTasks = await Task.find({ 
-      user: req.user._id, 
-      goal: goalId 
+    const allTasks = await Task.find({
+      user: req.user._id,
+      goal: goalId,
     }).sort({ sequenceOrder: 1 });
 
     // Categorize tasks
-    const queuedTasks = allTasks.filter(t => t.status === 'queued');
-    const pendingTasks = allTasks.filter(t => t.status === 'pending');
-    const completedTasks = allTasks.filter(t => t.status === 'completed');
-    const assignedTasks = allTasks.filter(t => t.assignedDate);
+    const queuedTasks = allTasks.filter((t) => t.status === "queued");
+    const pendingTasks = allTasks.filter((t) => t.status === "pending");
+    const completedTasks = allTasks.filter((t) => t.status === "completed");
+    const assignedTasks = allTasks.filter((t) => t.assignedDate);
 
     res.json({
       success: true,
@@ -289,36 +252,36 @@ router.get("/debug-sequential-system", protect, async (req, res) => {
         completedTasks: completedTasks.length,
         assignedTasks: assignedTasks.length,
         taskBreakdown: {
-          queued: queuedTasks.map(t => ({ 
-            id: t._id, 
-            title: t.title, 
+          queued: queuedTasks.map((t) => ({
+            id: t._id,
+            title: t.title,
             sequenceOrder: t.sequenceOrder,
             status: t.status,
-            assignedDate: t.assignedDate
+            assignedDate: t.assignedDate,
           })),
-          pending: pendingTasks.map(t => ({ 
-            id: t._id, 
-            title: t.title, 
+          pending: pendingTasks.map((t) => ({
+            id: t._id,
+            title: t.title,
             sequenceOrder: t.sequenceOrder,
             status: t.status,
-            assignedDate: t.assignedDate
+            assignedDate: t.assignedDate,
           })),
-          completed: completedTasks.map(t => ({ 
-            id: t._id, 
-            title: t.title, 
+          completed: completedTasks.map((t) => ({
+            id: t._id,
+            title: t.title,
             sequenceOrder: t.sequenceOrder,
             status: t.status,
-            assignedDate: t.assignedDate
-          }))
-        }
-      }
+            assignedDate: t.assignedDate,
+          })),
+        },
+      },
     });
   } catch (error) {
-    console.error('Error analyzing sequential system:', error);
+    console.error("Error analyzing sequential system:", error);
     res.status(500).json({
       success: false,
       message: "Failed to analyze sequential system",
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -327,27 +290,33 @@ router.get("/debug-sequential-system", protect, async (req, res) => {
 router.get("/debug-goal-relationships", protect, async (req, res) => {
   try {
     const { Goal } = await import("../models/Goal.js");
-    
+
     // Get all tasks for this user
     const allTasks = await Task.find({ user: req.user._id });
-    
+
     // Get all goals for this user
     const allGoals = await Goal.find({ user: req.user._id });
-    
+
     // Analyze task-goal relationships
-    const tasksWithGoal = allTasks.filter(task => task.goal);
-    const tasksWithoutGoal = allTasks.filter(task => !task.goal);
-    
+    const tasksWithGoal = allTasks.filter((task) => task.goal);
+    const tasksWithoutGoal = allTasks.filter((task) => !task.goal);
+
     const goalStats = {};
-    allGoals.forEach(goal => {
-      const goalTasks = allTasks.filter(task => task.goal && task.goal.toString() === goal._id.toString());
+    allGoals.forEach((goal) => {
+      const goalTasks = allTasks.filter(
+        (task) => task.goal && task.goal.toString() === goal._id.toString()
+      );
       goalStats[goal._id] = {
         goalName: goal.field,
         taskCount: goalTasks.length,
-        tasks: goalTasks.map(t => ({ id: t._id, name: t.title, status: t.status }))
+        tasks: goalTasks.map((t) => ({
+          id: t._id,
+          name: t.title,
+          status: t.status,
+        })),
       };
     });
-    
+
     res.json({
       success: true,
       data: {
@@ -356,56 +325,64 @@ router.get("/debug-goal-relationships", protect, async (req, res) => {
         tasksWithGoal: tasksWithGoal.length,
         tasksWithoutGoal: tasksWithoutGoal.length,
         goalStats,
-        orphanTasks: tasksWithoutGoal.map(t => ({ id: t._id, name: t.title, status: t.status }))
-      }
+        orphanTasks: tasksWithoutGoal.map((t) => ({
+          id: t._id,
+          name: t.title,
+          status: t.status,
+        })),
+      },
     });
   } catch (error) {
-    console.error('Error analyzing task-goal relationships:', error);
+    console.error("Error analyzing task-goal relationships:", error);
     res.status(500).json({
       success: false,
       message: "Failed to analyze task-goal relationships",
-      error: error.message
+      error: error.message,
     });
   }
 });
 
 // Import migration utilities
-import { migrateTasksToSequential, migrateAllUserTasks, validateSequentialIntegrity } from "../utils/taskSequenceMigration.js";
+import {
+  migrateTasksToSequential,
+  migrateAllUserTasks,
+  validateSequentialIntegrity,
+} from "../utils/taskSequenceMigration.js";
 
 // Utility endpoint to initialize existing tasks with sequence orders
 router.post("/initialize-sequences", protect, async (req, res) => {
   try {
     const { goalId } = req.body;
-    
+
     if (!goalId) {
       return res.status(400).json({
         success: false,
-        message: "Goal ID is required"
+        message: "Goal ID is required",
       });
     }
 
     const result = await migrateTasksToSequential(req.user._id, goalId);
-    
+
     if (result.success) {
       res.json({
         success: true,
         message: result.message,
         migratedCount: result.migratedCount,
-        goalId
+        goalId,
       });
     } else {
       res.status(500).json({
         success: false,
         message: result.message,
-        error: result.error
+        error: result.error,
       });
     }
   } catch (error) {
-    console.error('Error initializing task sequences:', error);
+    console.error("Error initializing task sequences:", error);
     res.status(500).json({
       success: false,
       message: "Failed to initialize task sequences",
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -414,27 +391,27 @@ router.post("/initialize-sequences", protect, async (req, res) => {
 router.post("/migrate-all-sequences", protect, async (req, res) => {
   try {
     const result = await migrateAllUserTasks(req.user._id);
-    
+
     if (result.success) {
       res.json({
         success: true,
         message: result.message,
         migratedGoals: result.migratedGoals,
-        totalMigratedTasks: result.totalMigratedTasks
+        totalMigratedTasks: result.totalMigratedTasks,
       });
     } else {
       res.status(500).json({
         success: false,
         message: result.message,
-        error: result.error
+        error: result.error,
       });
     }
   } catch (error) {
-    console.error('Error migrating all task sequences:', error);
+    console.error("Error migrating all task sequences:", error);
     res.status(500).json({
       success: false,
       message: "Failed to migrate all task sequences",
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -443,20 +420,20 @@ router.post("/migrate-all-sequences", protect, async (req, res) => {
 router.get("/validate-sequences/:goalId", protect, async (req, res) => {
   try {
     const { goalId } = req.params;
-    
+
     const result = await validateSequentialIntegrity(req.user._id, goalId);
-    
+
     res.json({
       success: result.success,
       validation: result,
-      goalId
+      goalId,
     });
   } catch (error) {
-    console.error('Error validating task sequences:', error);
+    console.error("Error validating task sequences:", error);
     res.status(500).json({
       success: false,
       message: "Failed to validate task sequences",
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -467,23 +444,45 @@ router.post("/fix-resource-types", protect, async (req, res) => {
     // Find all tasks with invalid resource types for this user
     const tasksWithInvalidResources = await Task.find({
       user: req.user._id,
-      'resources.type': { $nin: ['video', 'article', 'documentation', 'project', 'github', 'tutorial', 'course', 'book'] }
+      "resources.type": {
+        $nin: [
+          "video",
+          "article",
+          "documentation",
+          "project",
+          "github",
+          "tutorial",
+          "course",
+          "book",
+        ],
+      },
     });
 
     let fixedCount = 0;
     for (const task of tasksWithInvalidResources) {
       let hasChanges = false;
-      
+
       // Fix each resource
-      task.resources = task.resources.map(resource => {
-        const validTypes = ['video', 'article', 'documentation', 'project', 'github', 'tutorial', 'course', 'book'];
-        
+      task.resources = task.resources.map((resource) => {
+        const validTypes = [
+          "video",
+          "article",
+          "documentation",
+          "project",
+          "github",
+          "tutorial",
+          "course",
+          "book",
+        ];
+
         if (!validTypes.includes(resource.type)) {
-          console.log(`Fixing resource type "${resource.type}" -> "article" for task: ${task.title}`);
-          resource.type = 'article'; // Default to article
+          console.log(
+            `Fixing resource type "${resource.type}" -> "article" for task: ${task.title}`
+          );
+          resource.type = "article"; // Default to article
           hasChanges = true;
         }
-        
+
         return resource;
       });
 
@@ -496,14 +495,14 @@ router.post("/fix-resource-types", protect, async (req, res) => {
     res.json({
       success: true,
       message: `Fixed ${fixedCount} tasks with invalid resource types`,
-      fixedCount
+      fixedCount,
     });
   } catch (error) {
-    console.error('Error fixing resource types:', error);
+    console.error("Error fixing resource types:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fix resource types",
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -514,13 +513,13 @@ router.post("/create-test-task", protect, async (req, res) => {
     // Get user's first goal or create a dummy one
     const { Goal } = await import("../models/Goal.js");
     let goal = await Goal.findOne({ user: req.user._id });
-    
+
     if (!goal) {
       goal = new Goal({
         user: req.user._id,
         field: "Test Goal",
         description: "Test goal for resource display",
-        timeline: 30
+        timeline: 30,
       });
       await goal.save();
     }
@@ -529,7 +528,8 @@ router.post("/create-test-task", protect, async (req, res) => {
       user: req.user._id,
       goal: goal._id,
       title: "Test Task with Resources",
-      description: "This is a test task to verify resource display functionality. Click 'Details' to see the resources section.",
+      description:
+        "This is a test task to verify resource display functionality. Click 'Details' to see the resources section.",
       type: "learning",
       category: "Testing",
       difficulty: 3,
@@ -542,52 +542,53 @@ router.post("/create-test-task", protect, async (req, res) => {
         {
           type: "documentation",
           title: "React Official Documentation",
-          url: "https://reactjs.org/docs/getting-started.html"
+          url: "https://reactjs.org/docs/getting-started.html",
         },
         {
           type: "video",
           title: "React Tutorial for Beginners",
-          url: "https://www.youtube.com/watch?v=Ke90Tje7VS0"
+          url: "https://www.youtube.com/watch?v=Ke90Tje7VS0",
         },
         {
           type: "article",
           title: "Modern React Best Practices",
-          url: "https://blog.logrocket.com/modern-react-best-practices/"
+          url: "https://blog.logrocket.com/modern-react-best-practices/",
         },
         {
           type: "project",
           title: "React Examples Repository",
-          url: "https://github.com/facebook/react"
-        }
+          url: "https://github.com/facebook/react",
+        },
       ],
-      realWorldApplication: "Building modern web applications with React components and hooks",
+      realWorldApplication:
+        "Building modern web applications with React components and hooks",
       successCriteria: [
         "Understand React components and JSX",
         "Create a simple React application",
         "Use React hooks effectively",
-        "Implement component state management"
+        "Implement component state management",
       ],
       scheduledDate: new Date(),
       phase: 1,
       sequenceOrder: 1,
-      assignedDate: new Date()
+      assignedDate: new Date(),
     });
 
     await testTask.save();
-    
+
     res.json({
       success: true,
-      message: "Test task created successfully! Check your daily tasks and click 'Details' to see resources.",
-      task: testTask.formattedData
+      message:
+        "Test task created successfully! Check your daily tasks and click 'Details' to see resources.",
+      task: testTask.formattedData,
     });
   } catch (error) {
-    console.error('Error creating test task:', error);
+    console.error("Error creating test task:", error);
     res.status(500).json({
       success: false,
       message: "Failed to create test task",
-      error: error.message
+      error: error.message,
     });
   }
 });
-
 export default router;

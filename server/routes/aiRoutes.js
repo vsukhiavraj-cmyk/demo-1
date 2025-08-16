@@ -1,7 +1,6 @@
 import express from "express";
 import {
   generateTasksWithAI,
-  generateLearningRecommendations,
   generateRoadmapWithAI,
 } from "../controllers/aiController.js";
 import { protect } from "../middleware/auth.js";
@@ -13,8 +12,5 @@ router.post("/generate-tasks", protect, generateTasksWithAI);
 
 // POST /api/ai/generate-roadmap - Generate roadmap using Gemini AI
 router.post("/generate-roadmap", protect, generateRoadmapWithAI);
-
-// POST /api/ai/recommendations - Generate learning recommendations
-router.post("/recommendations", protect, generateLearningRecommendations);
 
 export default router;

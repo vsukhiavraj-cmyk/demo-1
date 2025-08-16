@@ -1,0 +1,426 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  background: #111111;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  /* Hide scrollbar for all browsers */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* Internet Explorer 10+ */
+}
+
+/* Hide scrollbar for WebKit browsers (Chrome, Safari, Edge) */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for all elements */
+*::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* Internet Explorer 10+ */
+}
+
+#root {
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+@layer components {
+
+  /* Global Button Design System - Gray to Gold/Silver on Hover */
+  .btn-base {
+    @apply relative inline-flex items-center justify-center font-bold border-none cursor-pointer transition-all duration-300;
+    background: linear-gradient(to right, #4b5563, #374151);
+    padding: 12px 24px;
+    border-radius: 12px;
+    color: #ffffff !important;
+  }
+
+  .btn-base:hover {
+    background: linear-gradient(145deg, #d4af37, #c0c0c0);
+    color: #111111 !important;
+  }
+
+  .btn-base:active {
+    transform: scale(0.98);
+  }
+
+  .btn-base:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-base:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.3);
+  }
+
+  /* Text color changes on hover */
+  .btn-base * {
+    color: inherit !important;
+  }
+
+  /* Button Variants */
+  .btn-primary {
+    @apply btn-base;
+    background: linear-gradient(to right, #4b5563, #374151);
+    color: #ffffff !important;
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(145deg, #d4af37, #c0c0c0);
+    color: #111111 !important;
+  }
+
+  .btn-primary:hover * {
+    color: #111111 !important;
+  }
+
+  .btn-secondary {
+    @apply btn-base;
+    background: linear-gradient(to right, #4b5563, #374151);
+    color: #ffffff !important;
+  }
+
+  .btn-secondary:hover {
+    background: linear-gradient(145deg, #d4af37, #c0c0c0);
+    color: #111111 !important;
+  }
+
+  .btn-secondary:hover * {
+    color: #111111 !important;
+  }
+
+  .btn-danger {
+    @apply btn-base;
+    background: linear-gradient(to right, #dc2626, #991b1b);
+    color: #ffffff !important;
+  }
+
+  .btn-danger:hover {
+    background: linear-gradient(145deg, #d4af37, #c0c0c0);
+    color: #111111 !important;
+  }
+
+  .btn-danger:hover * {
+    color: #111111 !important;
+  }
+
+  /* Size Variants */
+  .btn-sm {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+    border-radius: 6px;
+  }
+
+  .btn-md {
+    padding: 12px 24px;
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+
+  .btn-lg {
+    padding: 16px 32px;
+    font-size: 1.125rem;
+    border-radius: 10px;
+  }
+
+  .btn-xl {
+    padding: 20px 40px;
+    font-size: 1.25rem;
+    border-radius: 12px;
+  }
+
+  /* Legacy button classes for backward compatibility */
+  .btn-primary-legacy {
+    @apply font-semibold transition-all duration-300 px-4 py-2 rounded-lg;
+    background: linear-gradient(to right, #4b5563, #374151);
+    color: #ffffff !important;
+  }
+
+  .btn-primary-legacy:hover {
+    background: linear-gradient(145deg, #d4af37, #c0c0c0);
+    color: #111111 !important;
+  }
+
+  .btn-secondary-legacy {
+    @apply font-semibold transition-all duration-300 px-4 py-2 rounded-lg;
+    background: linear-gradient(to right, #4b5563, #374151);
+    color: #ffffff !important;
+  }
+
+  .btn-secondary-legacy:hover {
+    background: linear-gradient(145deg, #d4af37, #c0c0c0);
+    color: #111111 !important;
+  }
+}
+
+/* Cinematic Hero Text Shadows */
+.text-shadow {
+  text-shadow: 0px 2px 4px rgba(255, 255, 255, 0.5);
+}
+
+.text-shadow-lg {
+  text-shadow: 0px 4px 12px rgba(255, 255, 255, 0.7);
+}
+
+/* --- Styles for the new Cinematic Reveal Hero --- */
+
+.text-mask-container {
+
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%' viewBox='0 0 1000 400'%3E%3Cstyle%3E .text1, .text2 { font-size: 110px; font-weight: 900; font-family: 'Poppins', sans-serif; text-anchor: middle; dominant-baseline: middle; fill: white; } %3C/style%3E%3Ctext x='500' y='170' class='text1'%3EInfinite%3C/text%3E%3Ctext x='500' y='300' class='text2'%3ELearning%3C/text%3E%3C/svg%3E");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  mask-mode: alpha;
+  mask-composite: exclude;
+
+  /* Webkit prefix for Safari/Chrome */
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%' viewBox='0 0 1000 400'%3E%3Cstyle%3E .text1, .text2 { font-size: 110px; font-weight: 900; font-family: 'Poppins', sans-serif; text-anchor: middle; dominant-baseline: middle; fill: white; } %3C/style%3E%3Ctext x='500' y='170' class='text1'%3EInfinite%3C/text%3E%3Ctext x='500' y='300' class='text2'%3ELearning%3C/text%3E%3C/svg%3E");
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+  -webkit-mask-mode: alpha;
+  -webkit-mask-composite: xor;
+}
+
+/* This creates the initial outline/border effect for the text */
+
+/* Animation classes for the new task components */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Animation delays for staggered effects */
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animation-delay-500 {
+  animation-delay: 500ms;
+}
+
+.animation-delay-700 {
+  animation-delay: 700ms;
+}
+
+.animation-delay-1000 {
+  animation-delay: 1000ms;
+}
+
+.animation-delay-1200 {
+  animation-delay: 1200ms;
+}
+
+/* Custom color classes for the task components */
+.bg-mint-100 {
+  background-color: rgba(240, 253, 244, 0.1);
+}
+
+.border-mint-200 {
+  border-color: rgba(187, 247, 208, 0.2);
+}
+
+.text-mint-700 {
+  color: rgba(21, 128, 61, 0.7);
+}
+
+/* Font family for headings */
+.font-poppins {
+  font-family: 'Poppins', sans-serif;
+}
+
+body.modal-open {
+  overflow: hidden !important;
+  position: fixed;
+  width: 100vw;
+}
+
+/*
+ Learning Dashboard TaskSubmitButton Integration Styles */
+.learning-dashboard .learning-task-card .bg-gray-800\/90 {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  margin-top: 16px !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+.learning-dashboard .learning-task-card .bg-cyan-500\/10 {
+  background: rgba(6, 182, 212, 0.08) !important;
+  border: 1px solid rgba(6, 182, 212, 0.2) !important;
+  border-radius: 8px !important;
+  margin-bottom: 16px !important;
+}
+
+.learning-dashboard .learning-task-card .bg-gray-700\/50 {
+  background: rgba(55, 65, 81, 0.4) !important;
+  border-radius: 8px !important;
+  margin-bottom: 16px !important;
+}
+
+.learning-dashboard .learning-task-card .grid-cols-2 {
+  gap: 8px !important;
+}
+
+.learning-dashboard .learning-task-card .space-y-4>* {
+  margin-bottom: 12px !important;
+}
+
+.learning-dashboard .learning-task-card .animate-fadeIn {
+  animation: learningFadeIn 0.3s ease-in-out !important;
+}
+
+@keyframes learningFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.learning-dashboard .learning-task-card .border-gray-700\/50 {
+  border-color: rgba(75, 85, 99, 0.3) !important;
+}
+
+.learning-dashboard .learning-task-card .text-lg {
+  font-size: 1rem !important;
+}
+
+.learning-dashboard .learning-task-card .p-4 {
+  padding: 12px !important;
+}
+
+.learning-dashboard .learning-task-card .p-3 {
+  padding: 8px !important;
+}
+
+/* Ensure the submission form fits well within the task card */
+.learning-dashboard .learning-task-card>div:last-child {
+  width: 100%;
+}
+
+/* Make the submission form more compact for learning dashboard */
+.learning-dashboard .learning-task-card .space-y-4 {
+  gap: 12px !important;
+}
+
+.learning-dashboard .learning-task-card .space-y-6 {
+  gap: 16px !important;
+}
+
+/* Rem
+ove the submission form container styling to make it blend with task card */
+.learning-dashboard .learning-task-card .bg-gray-800\/90 h4 {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 1.1rem !important;
+  margin-bottom: 16px !important;
+  border-bottom: 1px solid rgba(75, 85, 99, 0.3) !important;
+  padding-bottom: 8px !important;
+}
+
+/* Make form sections blend with the task card background */
+.learning-dashboard .learning-task-card .bg-gray-800\/90>div {
+  background: transparent !important;
+}
+
+/* Style the form elements to match task card aesthetic */
+.learning-dashboard .learning-task-card .border-gray-700\/50 {
+  border-color: rgba(75, 85, 99, 0.2) !important;
+}
+
+/* Reduce spacing between form elements */
+.learning-dashboard .learning-task-card .space-y-6>*+* {
+  margin-top: 12px !important;
+}
+
+/* Task card animations */
+.task-card-expand {
+  animation: expandCard 0.3s ease-out;
+}
+
+@keyframes expandCard {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+    transform: translateY(0);
+  }
+}
+
+/* Custom button style for task actions */
+.task-action-button {
+  background-color: #181D24 !important;
+  color: white !important;
+  padding: 0.25rem 0.75rem !important;
+  border-radius: 0.25rem !important;
+  font-size: 0.875rem !important;
+  transition: opacity 0.2s ease !important;
+  border: none !important;
+}
+
+.task-action-button:hover {
+  background-color: #181D24 !important;
+  opacity: 0.8 !important;
+}
+
+/* Mobile-specific color overrides for #111827 to #111111 */
+@media (max-width: 768px) {
+
+  /* Override Tailwind's bg-gray-900 (#111827) with #111111 on mobile */
+  .bg-gray-900 {
+    background-color: #111111 !important;
+  }
+
+  /* Specific mobile overrides for components */
+  .bg-gray-900\/50 {
+    background-color: rgba(17, 17, 17, 0.5) !important;
+  }
+}
